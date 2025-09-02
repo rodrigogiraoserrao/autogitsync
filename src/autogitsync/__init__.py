@@ -94,6 +94,7 @@ def gitsync(interval: int, quiet: bool, amend: bool, message: str, path: Path) -
         try:
             if not repo.is_dirty(untracked_files=True):
                 _print("No new changes to sync.", quiet=quiet)
+                time.sleep(interval)
                 continue
 
             repo.git.add(all=True)
@@ -116,13 +117,13 @@ def gitsync(interval: int, quiet: bool, amend: bool, message: str, path: Path) -
             push_info_list.raise_if_error()
 
             _print(
-                ("Pushed changes. (amended)" if will_amend else "Pushed changes."),
+                "Amended changes" if will_amend else "Pushed changes.",
                 quiet=quiet,
                 style="green",
             )
 
         except KeyboardInterrupt:
-            _print("\nStopping gitsync. Bye!", quiet=False)
+            _print("\nStopping autogitsync. Bye!", quiet=False)
             break
         except Exception as e:
             _print(f"Sync failed: {e!s}", quiet=quiet, style="red")
