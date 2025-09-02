@@ -1,6 +1,6 @@
 [project]
 name = "autogitsync"
-version = "0.1.0"
+version = "0.2.0"
 description = "Automatically sync outgoing local changes with a remote repository."
 readme = "README.md"
 authors = [

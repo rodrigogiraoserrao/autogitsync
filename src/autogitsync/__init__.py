@@ -16,8 +16,8 @@ from rich.text import Text
 console = Console()
 
 
-def _print(msg: str | Panel, *, quiet: bool, style: Optional[str] = None) -> None:
-    if not quiet:
+def _print(msg: str | Panel, *, verbose: bool, style: Optional[str] = None) -> None:
+    if verbose:
         console.print(msg, style=style)
 
 
@@ -29,17 +29,24 @@ def _find_remote(repo: Repo) -> Optional[str]:
 
 
 @click.command(context_settings={"help_option_names": ["-h", "--help"]})
+@click.argument(
+    "path",
+    type=click.Path(file_okay=False, dir_okay=True, exists=True, path_type=Path),
+    metavar="REPO_PATH",
+)
 @click.option(
     "--interval",
     type=click.IntRange(min=1),
     default=60,
     show_default=True,
+    metavar="SECONDS",
     help="How often (in seconds) to attempt syncing.",
 )
 @click.option(
-    "--quiet/--verbose",
-    default=False,  # default is --verbose
-    help="Turn logging off/on.",
+    "--verbose/--quiet",
+    default=True,
+    show_default=True,
+    help="Turn logging on/off.",
 )
 @click.option(
     "--amend",
@@ -55,15 +62,10 @@ def _find_remote(repo: Repo) -> Optional[str]:
     metavar="MSG",
     help="Commit message to use.",
 )
-@click.option(
-    "--path",
-    type=click.Path(file_okay=False, dir_okay=True, exists=True, path_type=Path),
-    default=Path("."),
-    show_default=True,
-    help="Directory to sync (a Git repository).",
-)
-def gitsync(interval: int, quiet: bool, amend: bool, message: str, path: Path) -> None:
-    """Automatically sync a Git repository by add/commit/push in a loop."""
+def gitsync(
+    path: Path, interval: int, verbose: bool, amend: bool, message: str
+) -> None:
+    """Automatically sync outgoing local changes into a git repository."""
     try:
         repo_folder = path.resolve()
         os.chdir(repo_folder)
@@ -76,7 +78,7 @@ def gitsync(interval: int, quiet: bool, amend: bool, message: str, path: Path) -
         sys.exit(1)
 
     start_msg = Text(f"gitsync starting at {repo_folder}", style="bold")
-    _print(Panel(start_msg, title="GitSync", expand=False), quiet=quiet)
+    _print(Panel(start_msg, title="GitSync", expand=False), verbose=verbose)
 
     remote_name = _find_remote(repo)
     if remote_name is None:
@@ -86,14 +88,15 @@ def gitsync(interval: int, quiet: bool, amend: bool, message: str, path: Path) -
         sys.exit(2)
 
     _print(
-        f"Using remote [bold]{remote_name}[/bold]. Press Ctrl+C to stop.", quiet=quiet
+        f"Using remote [bold]{remote_name}[/bold]. Press Ctrl+C to stop.",
+        verbose=verbose,
     )
 
     first_commit = True
     while True:
         try:
             if not repo.is_dirty(untracked_files=True):
-                _print("No new changes to sync.", quiet=quiet)
+                _print("No new changes to sync.", verbose=verbose)
                 time.sleep(interval)
                 continue
 
@@ -105,8 +108,8 @@ def gitsync(interval: int, quiet: bool, amend: bool, message: str, path: Path) -
                     repo.git.commit("--amend", "-m", message)
                 except GitCommandError as exc:  # Regular commit if amending fails.
                     _print(
-                        f"Amending failed, doing a regular commit instead. {exc}",
-                        quiet=quiet,
+                        f"Amending failed, doing a regular commit instead.\n{exc}",
+                        verbose=verbose,
                     )
                     repo.index.commit(message)
                     will_amend = False
@@ -120,16 +123,16 @@ def gitsync(interval: int, quiet: bool, amend: bool, message: str, path: Path) -
             push_info_list.raise_if_error()
 
             _print(
-                "Amended changes" if will_amend else "Pushed changes.",
-                quiet=quiet,
+                "Amended changes." if will_amend else "Pushed changes.",
+                verbose=verbose,
                 style="green",
             )
 
         except KeyboardInterrupt:
-            _print("\nStopping autogitsync. Bye!", quiet=False)
+            _print("\nStopping autogitsync. Bye!", verbose=True)
             break
         except Exception as exc:
-            _print(f"Sync failed: {exc!s}", quiet=quiet, style="red")
+            _print(f"Sync failed: {exc!s}", verbose=verbose, style="red")
             sys.exit(3)
 
         time.sleep(interval)
