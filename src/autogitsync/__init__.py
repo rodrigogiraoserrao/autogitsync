@@ -105,7 +105,7 @@ def gitsync(interval: int, quiet: bool, amend: bool, message: str, path: Path) -
                     repo.git.commit("--amend", "-m", message)
                 except GitCommandError as exc:  # Regular commit if amending fails.
                     _print(
-                        f"(Amending failed, doing a regular commit instead. {exc})",
+                        f"Amending failed, doing a regular commit instead. {exc}",
                         quiet=quiet,
                     )
                     repo.index.commit(message)
