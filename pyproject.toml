@@ -1,0 +1,21 @@
+[project]
+name = "autogitsync"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Rodrigo Girão Serrão", email = "5621605+rodrigogiraoserrao@users.noreply.github.com" }
+]
+requires-python = ">=3.14"
+dependencies = [
+    "click>=8.2.1",
+    "gitpython>=3.1.45",
+    "rich>=14.1.0",
+]
+
+[project.scripts]
+autogitsync = "autogitsync:gitsync"
+
+[build-system]
+requires = ["uv_build>=0.8.13,<0.9.0"]
+build-backend = "uv_build"
