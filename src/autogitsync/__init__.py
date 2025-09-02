@@ -103,9 +103,9 @@ def gitsync(interval: int, quiet: bool, amend: bool, message: str, path: Path) -
             if will_amend:
                 try:
                     repo.git.commit("--amend", "-m", message)
-                except GitCommandError:  # Regular commit if amending fails.
+                except GitCommandError as exc:  # Regular commit if amending fails.
                     _print(
-                        "(Amending failed, doing a regular commit instead.)",
+                        f"(Amending failed, doing a regular commit instead. {exc})",
                         quiet=quiet,
                     )
                     repo.index.commit(message)
@@ -128,8 +128,8 @@ def gitsync(interval: int, quiet: bool, amend: bool, message: str, path: Path) -
         except KeyboardInterrupt:
             _print("\nStopping autogitsync. Bye!", quiet=False)
             break
-        except Exception as e:
-            _print(f"Sync failed: {e!s}", quiet=quiet, style="red")
+        except Exception as exc:
+            _print(f"Sync failed: {exc!s}", quiet=quiet, style="red")
             sys.exit(3)
 
         time.sleep(interval)
