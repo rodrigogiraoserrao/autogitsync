@@ -16,7 +16,7 @@ from rich.text import Text
 console = Console()
 
 
-def _print(msg: str, *, quiet: bool, style: Optional[str] = None) -> None:
+def _print(msg: str | Panel, *, quiet: bool, style: Optional[str] = None) -> None:
     if not quiet:
         console.print(msg, style=style)
 
@@ -26,13 +26,6 @@ def _find_remote(repo: Repo) -> Optional[str]:
     if not names:
         return None
     return "origin" if "origin" in names else names[0]
-
-
-def _has_changes(repo: Repo) -> bool:
-    try:
-        return repo.is_dirty(untracked_files=True) or bool(repo.untracked_files)
-    except Exception:
-        return True
 
 
 @click.command(context_settings={"help_option_names": ["-h", "--help"]})
@@ -52,7 +45,7 @@ def _has_changes(repo: Repo) -> bool:
     "--amend",
     is_flag=True,
     default=False,
-    help="Amend the previous commit instead of creating a new one.",
+    help="Amend first sync commit with subsequent changes.",
 )
 @click.option(
     "--message",
@@ -70,15 +63,16 @@ def _has_changes(repo: Repo) -> bool:
     help="Directory to sync (a Git repository).",
 )
 def gitsync(interval: int, quiet: bool, amend: bool, message: str, path: Path) -> None:
-    """
-    Automatically sync a Git repository by add/commit/push in a loop.
-    """
+    """Automatically sync a Git repository by add/commit/push in a loop."""
     try:
         repo_folder = path.resolve()
         os.chdir(repo_folder)
         repo = Repo(repo_folder)
-    except (InvalidGitRepositoryError, NoSuchPathError) as e:
-        console.print(f"[red]Error:[/red] {e}")
+    except InvalidGitRepositoryError:
+        console.print(f"[red]Not a valid repo:[/red] {path}")
+        sys.exit(1)
+    except NoSuchPathError:
+        console.print(f"[red]Not a valid path:[/red] {path}")
         sys.exit(1)
 
     start_msg = Text(f"gitsync starting at {repo_folder}", style="bold")
@@ -86,37 +80,46 @@ def gitsync(interval: int, quiet: bool, amend: bool, message: str, path: Path) -
 
     remote_name = _find_remote(repo)
     if remote_name is None:
-        console.print("[red]Error:[/red] No Git remotes configured for this repository.")
+        console.print(
+            "[red]Error:[/red] No Git remotes configured for this repository."
+        )
         sys.exit(2)
 
-    _print(f"Using remote [bold]{remote_name}[/bold]. Press Ctrl+C to stop.", quiet=quiet)
+    _print(
+        f"Using remote [bold]{remote_name}[/bold]. Press Ctrl+C to stop.", quiet=quiet
+    )
 
     first_commit = True
     while True:
         try:
-            if not _has_changes(repo):
+            if not repo.is_dirty(untracked_files=True):
                 _print("No new changes to sync.", quiet=quiet)
+                continue
+
+            repo.git.add(all=True)
+
+            will_amend = amend and not first_commit
+            if will_amend:
+                # Try to amend, fall back to regular commit if it fails.
+                try:
+                    repo.git.commit("--amend", "-m", message)
+                except GitCommandError:
+                    repo.index.commit(message)
+                    will_amend = False
             else:
-                # Stage everything (adds, mods, deletions)
-                repo.git.add(all=True)
+                repo.index.commit(message)
+                first_commit = False
 
-                # After staging, check again—sometimes ignores mean nothing was actually staged
-                if not _has_changes(repo):
-                    _print("No new changes to sync.", quiet=quiet)
-                else:
-                    if amend and not first_commit:
-                        # Try to amend (with message); fall back to a normal commit if no previous commit exists
-                        try:
-                            repo.git.commit("--amend", "-m", message)
-                        except GitCommandError:
-                            repo.index.commit(message)
-                    else:
-                        repo.index.commit(message)
-                        first_commit = False
+            push_info_list = repo.remote(remote_name).push(
+                force=amend and not first_commit
+            )
+            push_info_list.raise_if_error()
 
-                    push_info_list = repo.remote(remote_name).push(force=amend and not first_commit)
-                    push_info_list.raise_if_error()  # Raise an exception if there was an error pushing.
-                    _print("Pushed changes.", quiet=quiet, style="green")
+            _print(
+                ("Pushed changes. (amended)" if will_amend else "Pushed changes."),
+                quiet=quiet,
+                style="green",
+            )
 
         except KeyboardInterrupt:
             _print("\nStopping gitsync. Bye!", quiet=False)
