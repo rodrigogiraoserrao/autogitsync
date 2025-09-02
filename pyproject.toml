@@ -1,7 +1,7 @@
 [project]
 name = "autogitsync"
 version = "0.1.0"
-description = "Add your description here"
+description = "Automatically sync outgoing local changes with a remote repository."
 readme = "README.md"
 authors = [
     { name = "Rodrigo Girão Serrão", email = "5621605+rodrigogiraoserrao@users.noreply.github.com" }

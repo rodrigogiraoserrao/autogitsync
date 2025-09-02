@@ -91,6 +91,7 @@ def gitsync(interval: int, quiet: bool, amend: bool, message: str, path: Path) -
 
     _print(f"Using remote [bold]{remote_name}[/bold]. Press Ctrl+C to stop.", quiet=quiet)
 
+    first_commit = True
     while True:
         try:
             if not _has_changes(repo):
@@ -103,7 +104,7 @@ def gitsync(interval: int, quiet: bool, amend: bool, message: str, path: Path) -
                 if not _has_changes(repo):
                     _print("No new changes to sync.", quiet=quiet)
                 else:
-                    if amend:
+                    if amend and not first_commit:
                         # Try to amend (with message); fall back to a normal commit if no previous commit exists
                         try:
                             repo.git.commit("--amend", "-m", message)
@@ -111,6 +112,7 @@ def gitsync(interval: int, quiet: bool, amend: bool, message: str, path: Path) -
                             repo.index.commit(message)
                     else:
                         repo.index.commit(message)
+                        first_commit = False
 
                     repo.remote(remote_name).push()
                     _print("Pushed changes.", quiet=quiet, style="green")
