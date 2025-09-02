@@ -114,7 +114,10 @@ def gitsync(interval: int, quiet: bool, amend: bool, message: str, path: Path) -
                         repo.index.commit(message)
                         first_commit = False
 
-                    push_info_list = repo.remote(remote_name).push()
+                    if amend and not first_commit:
+                        push_info_list = repo.git.push("--force")  # Force-push the amended commit
+                    else:
+                        push_info_list = repo.remote(remote_name).push()
                     push_info_list.raise_if_error()  # Raise an exception if there was an error pushing.
                     _print("Pushed changes.", quiet=quiet, style="green")
 
@@ -123,6 +126,7 @@ def gitsync(interval: int, quiet: bool, amend: bool, message: str, path: Path) -
             break
         except Exception as e:
             _print(f"Sync failed: {e!s}", quiet=quiet, style="red")
+            sys.exit(3)
 
         time.sleep(interval)
 
