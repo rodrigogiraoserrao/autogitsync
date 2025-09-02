@@ -101,10 +101,9 @@ def gitsync(interval: int, quiet: bool, amend: bool, message: str, path: Path) -
 
             will_amend = amend and not first_commit
             if will_amend:
-                # Try to amend, fall back to regular commit if it fails.
                 try:
                     repo.git.commit("--amend", "-m", message)
-                except GitCommandError:
+                except GitCommandError:  # Regular commit if amending fails.
                     repo.index.commit(message)
                     will_amend = False
             else:
