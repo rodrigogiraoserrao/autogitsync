@@ -97,7 +97,7 @@ def gitsync(interval: int, quiet: bool, amend: bool, message: str, path: Path) -
                 time.sleep(interval)
                 continue
 
-            repo.git.add(all=True)
+            repo.index.add("*")  # type: ignore
 
             will_amend = amend and not first_commit
             if will_amend:
