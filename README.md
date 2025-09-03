@@ -1,5 +1,14 @@
 # autogitsync
 
+This CLI tool syncs your local changes to a git repository.
+Useful when you're doing live-coding/teaching and want students to have near-live access to your work.
+
+**How I use this**:
+
+When teaching/giving tutorials at conferences, I create a repository for the workshop/course.
+When the session starts, I start `autogitsync` and share the repository link with the audience.
+Throughout the session, participants can go to the repository and they'll have the most recent version of my work and I don't have to keep adding, commiting, and pushing changes myself.
+
 ```
 Usage: autogitsync [OPTIONS] REPO_PATH
 

@@ -1,12 +1,12 @@
 [project]
 name = "autogitsync"
-version = "0.2.0"
+version = "0.3.0"
 description = "Automatically sync outgoing local changes with a remote repository."
 readme = "README.md"
 authors = [
     { name = "Rodrigo Girão Serrão", email = "5621605+rodrigogiraoserrao@users.noreply.github.com" }
 ]
-requires-python = ">=3.14"
+requires-python = ">=3.12"
 dependencies = [
     "click>=8.2.1",
     "gitpython>=3.1.45",
