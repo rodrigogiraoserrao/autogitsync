@@ -1,6 +1,6 @@
 [project]
 name = "autogitsync"
-version = "0.3.0"
+version = "0.5.0"
 description = "Automatically sync outgoing local changes with a remote repository."
 readme = "README.md"
 authors = [
@@ -12,6 +12,22 @@ dependencies = [
     "gitpython>=3.1.45",
     "rich>=14.1.0",
 ]
+license = "MIT"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Education",
+    "Typing :: Typed",
+]
+
+[project.urls]
+Documentation = "https://github.com/rodrigogiraoserrao/autogitsync/blob/main/README.md"
+Repository = "https://github.com/rodrigogiraoserrao/autogitsync"
+Issues = "https://github.com/rodrigogiraoserrao/autogitsync/issues"
 
 [project.scripts]
 autogitsync = "autogitsync:gitsync"

@@ -100,7 +100,7 @@ def gitsync(
                 time.sleep(interval)
                 continue
 
-            repo.index.add("*")  # type: ignore
+            repo.git.add(".")
 
             will_amend = amend and not first_commit
             if will_amend:
