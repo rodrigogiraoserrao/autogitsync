@@ -1,5 +1,8 @@
 # autogitsync
 
+![Static Badge](https://img.shields.io/badge/Usefulness%20-%20%E2%AD%90%EF%B8%8F%20Very%20useful%20-%20black)
+
+
 This CLI tool syncs your local changes to a git repository.
 Useful when you're doing live-coding/teaching and want students to have near-live access to your work.
 
