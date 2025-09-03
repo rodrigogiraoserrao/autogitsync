@@ -9,6 +9,8 @@ When teaching/giving tutorials at conferences, I create a repository for the wor
 When the session starts, I start `autogitsync` and share the repository link with the audience.
 Throughout the session, participants can go to the repository and they'll have the most recent version of my work and I don't have to keep adding, commiting, and pushing changes myself.
 
+## CLI interface
+
 ```
 Usage: autogitsync [OPTIONS] REPO_PATH
 
